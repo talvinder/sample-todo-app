@@ -1,0 +1,34 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: todos
+    ports: ["3306:3306"]
+    volumes: [mysql-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6380:6379"]   # 6380 on the host; 6379 is often taken by a local redis
+
+  backend:
+    build: ./backend
+    environment:
+      MYSQL_DSN: root:root@tcp(mysql:3306)/todos?parseTime=true
+      REDIS_ADDR: redis:6379
+    ports: ["8080:8080"]
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  frontend:
+    build: ./frontend
+    ports: ["3000:80"]
+    depends_on: [backend]
+
+volumes:
+  mysql-data:

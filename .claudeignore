@@ -1,0 +1,10 @@
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+.venv/
+*.db
+*.zip
+*.7z
+.DS_Store
